@@ -2232,7 +2232,7 @@ public struct BDouble:
 
 		Returns: A new BDouble
 	*/
-	public init(sign: Bool, numerator: Limbs, denominator: Limbs)
+	public init(sign: Bool, numerator: Limbs, denominator: Limbs, precision: Int? = nil)
 	{
 		precondition(
 			!denominator.equalTo(0) && denominator != [] && numerator != [],
@@ -2242,33 +2242,38 @@ public struct BDouble:
 		self.sign = sign
 		self.numerator = numerator
 		self.denominator = denominator
-
+		if let precision = precision {
+			self.precision = precision
+		}
+		
 		self.minimize()
 	}
 
-	public init(_ numerator: BInt, over denominator: BInt)
+	public init(_ numerator: BInt, over denominator: BInt, precision: Int? = nil)
 	{
 		self.init(
 			sign:			numerator.sign != denominator.sign,
 			numerator:		numerator.limbs,
-			denominator:	denominator.limbs
+			denominator:	denominator.limbs,
+			precision:		precision
 		)
 	}
 
-	public init(_ numerator: Int, over denominator: Int)
+	public init(_ numerator: Int, over denominator: Int, precision: Int? = nil)
 	{
 		self.init(
 			sign: (numerator < 0) != (denominator < 0),
 			numerator: [UInt64(abs(numerator))],
-			denominator: [UInt64(abs(denominator))]
+			denominator: [UInt64(abs(denominator))],
+			precision: precision
 		)
 	}
 
-	public init?(_ numerator: String, over denominator: String)
+	public init?(_ numerator: String, over denominator: String, precision: Int? = nil)
 	{
 		if let n = BInt(numerator) {
 			if let d = BInt(denominator) {
-				self.init(n, over: d)
+				self.init(n, over: d, precision: precision)
 				return
 			}
 		}
@@ -2278,7 +2283,7 @@ public struct BDouble:
 	public init?(_ nStr: String)
 	{
 		if let bi = BInt(nStr) {
-			self.init(bi, over: 1)
+			self.init(bi, over: 1, precision: 0)
 		} else {
 			if let exp = nStr.index(of: "e")?.encodedOffset
 			{
@@ -2290,35 +2295,35 @@ public struct BDouble:
 				{
 					afterExp = String(Array(afterExp)[(neg + 1)...])
 					sign = true
+				} else if let plus = afterExp.index(of: "+")?.encodedOffset {
+					afterExp = String(Array(afterExp)[(plus + 1)...])
 				}
 
+				guard var safeAfterExp = Int(afterExp) else {
+					return nil
+				}
+				
+				if let io = nStr.index(of: ".")?.encodedOffset
+				{
+					let afterPointBeforeExp = String(Array(nStr)[(io + 1)..<exp])
+					if sign {
+						safeAfterExp += afterPointBeforeExp.count
+					} else {
+						safeAfterExp -= afterPointBeforeExp.count
+					}
+				}
+				
 				if sign
 				{
-					if var safeAfterExp = Int(afterExp) {
-                        if beforeExp.starts(with: "+") || beforeExp.starts(with: "-") {
-                            safeAfterExp = safeAfterExp - beforeExp.count + 2
-                        } else {
-                            safeAfterExp = safeAfterExp - beforeExp.count + 1
-                        }
-						let den = ["1"] + [Character](repeating: "0", count: safeAfterExp)
-						self.init(beforeExp, over: String(den))
-						return
-					}
-					return nil
+					let den = ["1"] + [Character](repeating: "0", count: safeAfterExp)
+					self.init(beforeExp, over: String(den), precision: safeAfterExp)
+					return
 				}
 				else
 				{
-					if var safeAfterExp = Int(afterExp) {
-                        if beforeExp.starts(with: "+") || beforeExp.starts(with: "-") {
-                            safeAfterExp = safeAfterExp - beforeExp.count + 2
-                        } else {
-                            safeAfterExp = safeAfterExp - beforeExp.count + 1
-                        }
-						let num = beforeExp + String([Character](repeating: "0", count: safeAfterExp))
-						self.init(num, over: "1")
-						return
-					}
-					return nil
+					let num = beforeExp + String([Character](repeating: "0", count: safeAfterExp))
+					self.init(num, over: "1", precision: 0)
+					return
 				}
 			}
 
@@ -2328,15 +2333,16 @@ public struct BDouble:
 
 				let beforePoint = String(Array(nStr)[..<i])
 				let afterPoint  = String(Array(nStr)[(i + 1)...])
-
+				let precision = afterPoint.count
+				
 				if afterPoint == "0"
 				{
-					self.init(beforePoint, over: "1")
+					self.init(beforePoint, over: "1", precision: 0)
 				}
 				else
 				{
 					let den = ["1"] + [Character](repeating: "0", count: afterPoint.count)
-					self.init(beforePoint + afterPoint, over: String(den))
+					self.init(beforePoint + afterPoint, over: String(den), precision: precision)
 				}
 			} else
 			{
@@ -2484,11 +2490,11 @@ public struct BDouble:
 		}
 		set
 		{
-		var nv = newValue
-		if nv < 0 {
-		nv = 0
-		}
-		_precision = nv
+			var nv = newValue
+			if nv < 0 {
+					nv = 0
+			}
+			_precision = nv
 		}
 	}
 
@@ -2516,8 +2522,13 @@ public struct BDouble:
         let multiplier = [10].exponentiating(currentPrecision)
         let limbs = self.numerator.multiplyingBy(multiplier).divMod(self.denominator).quotient
         var res = BInt(limbs: limbs).description
-        
-        if currentPrecision <= res.count
+		
+		if currentPrecision == 0 {
+			let retVal = self.isNegative() && !limbs.equalTo(0) ? "-" + res : res
+			return retVal
+		}
+		
+        if currentPrecision <= res.count && currentPrecision != 0
         {
             res.insert(".", at: String.Index(encodedOffset: res.count - currentPrecision))
             if res.hasPrefix(".") { res = "0" + res }

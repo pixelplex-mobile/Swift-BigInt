@@ -31,6 +31,8 @@ class BDoubleTests : XCTestCase {
 		XCTAssertEqual(BDouble("1.2e+10")?.fractionDescription, "12000000000")
 		XCTAssertEqual(BDouble("+1.2e+10")?.fractionDescription, "12000000000")
 		XCTAssertEqual(BDouble("-1.2e10")?.fractionDescription, "-12000000000")
+		XCTAssertEqual(BDouble("1.2e-3")?.fractionDescription, "3/2500")
+		XCTAssertEqual(BDouble("-1.2e-3")?.fractionDescription, "-3/2500")
 		XCTAssertEqual(BDouble(123000000000000000000.0), 123000000000000000000.0)
 		XCTAssertEqual(BDouble("1.2")?.fractionDescription, "6/5")
 		
@@ -454,4 +456,88 @@ class BDoubleTests : XCTestCase {
 		}
 	}
 	
+	func testDescriptionDoubleValuesValue1() {
+		
+		//arrange
+		let stringValue1 = "0.00001"
+		let stringValue2 = "-0.00001"
+		let stringValue3 = "0.000000"
+		let stringValue4 = "-0.000000146"
+		let stringValue5 = "0.00000014614515123512341235151615341234161341235161351"
+		let stringValue6 = "-0.00000014614515123512341235151615341234161341235161351"
+		let stringValue7 = "-0.000000"
+		
+		//act
+		let bDouble1 = BDouble.init(stringValue1)!
+		let bDouble2 = BDouble.init(stringValue2)!
+		let bDouble3 = BDouble.init(stringValue3)!
+		let bDouble4 = BDouble.init(stringValue4)!
+		let bDouble5 = BDouble.init(stringValue5)!
+		let bDouble6 = BDouble.init(stringValue6)!
+		let bDouble7 = BDouble.init(stringValue7)!
+		
+		//assert
+		XCTAssertEqual(bDouble1.decimalDescription, stringValue1)
+		XCTAssertEqual(bDouble2.decimalDescription, stringValue2)
+		XCTAssertEqual(bDouble3.decimalDescription, stringValue3)
+		XCTAssertEqual(bDouble4.decimalDescription, stringValue4)
+		XCTAssertEqual(bDouble5.decimalDescription, stringValue5)
+		XCTAssertEqual(bDouble6.decimalDescription, stringValue6)
+		XCTAssertNotEqual(bDouble7.decimalDescription, stringValue7)
+	}
+	
+	func testExponentiationNumberDescription() {
+		
+		//arrange
+		let stringValue1 = "1.2e-3"
+		let stringValueDecimal1 = "0.0012"
+		let stringValue2 = "-1.2e-3"
+		let stringValueDecimal2 = "-0.0012"
+		let stringValue3 = "1.2e3"
+		let stringValueDecimal3 = "1200"
+		let stringValue4 = "-1.2e3"
+		let stringValueDecimal4 = "-1200"
+		let stringValue5 = "-1.2e+3"
+		let stringValueDecimal5 = "-1200"
+		let stringValue6 = "1.2e+3"
+		let stringValueDecimal6 = "1200"
+		
+		//act
+		let bDouble1 = BDouble.init(stringValue1)!
+		let bDouble2 = BDouble.init(stringValue2)!
+		let bDouble3 = BDouble.init(stringValue3)!
+		let bDouble4 = BDouble.init(stringValue4)!
+		let bDouble5 = BDouble.init(stringValue5)!
+		let bDouble6 = BDouble.init(stringValue6)!
+		
+		
+		//assert
+		XCTAssertEqual(bDouble1.decimalDescription, stringValueDecimal1)
+		XCTAssertEqual(bDouble2.decimalDescription, stringValueDecimal2)
+		XCTAssertEqual(bDouble3.decimalDescription, stringValueDecimal3)
+		XCTAssertEqual(bDouble4.decimalDescription, stringValueDecimal4)
+		XCTAssertEqual(bDouble5.decimalDescription, stringValueDecimal5)
+		XCTAssertEqual(bDouble6.decimalDescription, stringValueDecimal6)
+	}
+	
+	func testDescriptionLikeBIntValues() {
+		
+		//arrange
+		let stringValue1 = "2000"
+		let stringValue2 = "-2000"
+		let stringValue3 = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+		let stringValue4 = "-57896044618658097711785492504343953926634992332820282019728792003956564819966"
+		
+		//act
+		let bDouble1 = BDouble.init(stringValue1)!
+		let bDouble2 = BDouble.init(stringValue2)!
+		let bDouble3 = BDouble.init(stringValue3)!
+		let bDouble4 = BDouble.init(stringValue4)!
+		
+		//assert
+		XCTAssertEqual(bDouble1.decimalDescription, stringValue1)
+		XCTAssertEqual(bDouble2.decimalDescription, stringValue2)
+		XCTAssertEqual(bDouble3.decimalDescription, stringValue3)
+		XCTAssertEqual(bDouble4.decimalDescription, stringValue4)
+	}
 }
