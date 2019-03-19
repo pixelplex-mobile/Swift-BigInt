@@ -31,6 +31,8 @@ class BDoubleTests : XCTestCase {
 		XCTAssertEqual(BDouble("1.2e+10")?.fractionDescription, "12000000000")
 		XCTAssertEqual(BDouble("+1.2e+10")?.fractionDescription, "12000000000")
 		XCTAssertEqual(BDouble("-1.2e10")?.fractionDescription, "-12000000000")
+		XCTAssertEqual(BDouble("1.2e-3")?.fractionDescription, "3/2500")
+		XCTAssertEqual(BDouble("-1.2e-3")?.fractionDescription, "-3/2500")
 		XCTAssertEqual(BDouble(123000000000000000000.0), 123000000000000000000.0)
 		XCTAssertEqual(BDouble("1.2")?.fractionDescription, "6/5")
 		
@@ -484,16 +486,38 @@ class BDoubleTests : XCTestCase {
 		XCTAssertNotEqual(bDouble7.decimalDescription, stringValue7)
 	}
 	
-	func testExponentialNumberDescription() {
+	func testExponentiationNumberDescription() {
 		
 		//arrange
-		let stringValue1 = "+1.2e-123"
+		let stringValue1 = "1.2e-3"
+		let stringValueDecimal1 = "0.0012"
+		let stringValue2 = "-1.2e-3"
+		let stringValueDecimal2 = "-0.0012"
+		let stringValue3 = "1.2e3"
+		let stringValueDecimal3 = "1200"
+		let stringValue4 = "-1.2e3"
+		let stringValueDecimal4 = "-1200"
+		let stringValue5 = "-1.2e+3"
+		let stringValueDecimal5 = "-1200"
+		let stringValue6 = "1.2e+3"
+		let stringValueDecimal6 = "1200"
 		
 		//act
 		let bDouble1 = BDouble.init(stringValue1)!
+		let bDouble2 = BDouble.init(stringValue2)!
+		let bDouble3 = BDouble.init(stringValue3)!
+		let bDouble4 = BDouble.init(stringValue4)!
+		let bDouble5 = BDouble.init(stringValue5)!
+		let bDouble6 = BDouble.init(stringValue6)!
+		
 		
 		//assert
-		XCTAssertEqual(bDouble1.decimalDescription, stringValue1)
+		XCTAssertEqual(bDouble1.decimalDescription, stringValueDecimal1)
+		XCTAssertEqual(bDouble2.decimalDescription, stringValueDecimal2)
+		XCTAssertEqual(bDouble3.decimalDescription, stringValueDecimal3)
+		XCTAssertEqual(bDouble4.decimalDescription, stringValueDecimal4)
+		XCTAssertEqual(bDouble5.decimalDescription, stringValueDecimal5)
+		XCTAssertEqual(bDouble6.decimalDescription, stringValueDecimal6)
 	}
 	
 	func testDescriptionLikeBIntValues() {

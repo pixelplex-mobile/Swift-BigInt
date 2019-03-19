@@ -2295,35 +2295,35 @@ public struct BDouble:
 				{
 					afterExp = String(Array(afterExp)[(neg + 1)...])
 					sign = true
+				} else if let plus = afterExp.index(of: "+")?.encodedOffset {
+					afterExp = String(Array(afterExp)[(plus + 1)...])
 				}
 
+				guard var safeAfterExp = Int(afterExp) else {
+					return nil
+				}
+				
+				if let io = nStr.index(of: ".")?.encodedOffset
+				{
+					let afterPointBeforeExp = String(Array(nStr)[(io + 1)..<exp])
+					if sign {
+						safeAfterExp += afterPointBeforeExp.count
+					} else {
+						safeAfterExp -= afterPointBeforeExp.count
+					}
+				}
+				
 				if sign
 				{
-					if var safeAfterExp = Int(afterExp) {
-                        if beforeExp.starts(with: "+") || beforeExp.starts(with: "-") {
-                            safeAfterExp = safeAfterExp - beforeExp.count + 2
-                        } else {
-                            safeAfterExp = safeAfterExp - beforeExp.count + 1
-                        }
-						let den = ["1"] + [Character](repeating: "0", count: safeAfterExp)
-						self.init(beforeExp, over: String(den), precision: safeAfterExp)
-						return
-					}
-					return nil
+					let den = ["1"] + [Character](repeating: "0", count: safeAfterExp)
+					self.init(beforeExp, over: String(den), precision: safeAfterExp)
+					return
 				}
 				else
 				{
-					if var safeAfterExp = Int(afterExp) {
-                        if beforeExp.starts(with: "+") || beforeExp.starts(with: "-") {
-                            safeAfterExp = safeAfterExp - beforeExp.count + 2
-                        } else {
-                            safeAfterExp = safeAfterExp - beforeExp.count + 1
-                        }
-						let num = beforeExp + String([Character](repeating: "0", count: safeAfterExp))
-						self.init(num, over: "1", precision: 0)
-						return
-					}
-					return nil
+					let num = beforeExp + String([Character](repeating: "0", count: safeAfterExp))
+					self.init(num, over: "1", precision: 0)
+					return
 				}
 			}
 
